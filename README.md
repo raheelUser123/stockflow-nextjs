@@ -90,3 +90,11 @@ After 0001, 0002, and 0003, run `supabase/migrations/0004_team_roles.sql` once. 
 Run `supabase/migrations/0005_product_images.sql` **once**, after 0001–0004. It creates a private Supabase Storage bucket (`product-images`), adds `products.image_path`, and protects image uploads/deletes with organization role checks. Products page now supports image upload (JPG/PNG/WebP, max 5MB); POS and product table show signed images. No service-role key is needed in the browser.
 
 The upload and product save are separate requests. If save fails, the UI attempts to remove the uploaded image; orphaned images from interrupted requests may require a periodic cleanup job. The current image is replaced when editing with a new upload; old files are not automatically garbage-collected. This is a development release, not a fully audited production deployment.
+
+## Migration 0006: Stock adjustments and sales returns
+
+Run `supabase/migrations/0006_returns_adjustments.sql` after migrations 0001–0005. The dashboard includes **Stock Adjustments** and **Sales Returns**. Both use SECURITY DEFINER RPCs with role checks and audit logs. Returns restock items and record the calculated refund *liability*, but **do not actually refund money** via a payment gateway. Existing sales totals remain gross; calculate net sales by subtracting returns. This migration is not a warehouse transfer system.
+
+### Current limitations / production blockers
+
+This repository is an evolving MVP, **not a finished enterprise SaaS**. There is no real subscription billing, supplier self-service portal, transactional email invitations, end-to-end custom-permission enforcement across legacy RPCs, full warehouse stock accounting, integrated card gateway, cash reconciliation, or verified production build. Product photos require migration 0005 and Supabase Storage. Before live business use, run `npm install`, `npm run typecheck`, `npm run build`, and tenant-isolation/stock-concurrency tests against a staging Supabase project. Apply migrations to a backed-up database; test with a fresh company and a second account. Never place Supabase service-role credentials in `NEXT_PUBLIC_*` environment variables.

@@ -1,9 +1,29 @@
+import {WarehouseTransferWorkspace} from '@/components/warehouse-transfer-workspace';
+import {StockWorkspace} from '@/components/stock-workspace';
 import {notFound,redirect} from 'next/navigation';import {createClient} from '@/lib/supabase/server';import {OperationsWorkspace} from '@/components/operations-workspace';
 import {ExtendedWorkspace} from '@/components/extended-workspace';
 import {TeamRolesWorkspace} from '@/components/team-roles-workspace';
-const names:Record<string,string>={customers:'Customers',categories:'Categories',purchases:'Purchase Orders',products:'Products',warehouses:'Warehouses',suppliers:'Suppliers',pos:'Point of Sale',sales:'Sales',analytics:'Analytics',team:'Team Management',roles:'Roles & Permissions',audit:'Activity Logs',settings:'Settings'};
+const names:Record<string,string>={customers:'Customers',categories:'Categories',purchases:'Purchase Orders',products:'Products',warehouses:'Warehouses',suppliers:'Suppliers',pos:'Point of Sale',sales:'Sales',analytics:'Analytics',team:'Team Management',roles:'Roles & Permissions',audit:'Activity Logs',settings:'Settings',adjustments:'Stock Adjustments',returns:'Sales Returns','stock-transfers':'Warehouse Transfers'};
 export default async function Page({params,searchParams}:{params:Promise<{module:string}>,searchParams:Promise<{organization?:string}>}){
  const {module}=await params;if(!names[module])notFound();const db=await createClient();const {data:{user}}=await db.auth.getUser();if(!user)redirect('/login');const {data:members}=await db.from('organization_members').select('organization_id,role').eq('user_id',user.id);if(!members?.length)redirect('/onboarding');const query=await searchParams;const org=members.find(m=>m.organization_id===query.organization)?.organization_id||members[0].organization_id;
+ if(module==='stock-transfers'){
+  const [{data:warehouses,error:wErr},{data:products,error:pErr},{data:balances,error:bErr}]=await Promise.all([
+   db.from('warehouses').select('id,name').eq('organization_id',org).order('name'),
+   db.from('products').select('id,name,stock').eq('organization_id',org).eq('active',true).order('name'),
+   db.from('warehouse_stock').select('warehouse_id,product_id,quantity').eq('organization_id',org)
+  ]);
+  if(wErr||pErr||bErr)return <div className="panel p-8">{wErr?.message||pErr?.message||bErr?.message}</div>;
+  return <WarehouseTransferWorkspace org={org} warehouses={warehouses||[]} products={products||[]} balances={balances||[]}/>;
+ }
+ if(['adjustments','returns'].includes(module)){
+  const [{data:products,error:pErr},{data:sales,error:sErr},{data:lines,error:lErr}]=await Promise.all([
+   db.from('products').select('id,name,sku,stock').eq('organization_id',org).eq('active',true).order('name'),
+   db.from('sales').select('id,receipt_number,total,created_at').eq('organization_id',org).order('created_at',{ascending:false}).limit(100),
+   db.from('sale_items').select('id,sale_id,quantity,unit_price,product_id').eq('organization_id',org).limit(1000)
+  ]);
+  if(pErr||sErr||lErr)return <div className="panel p-8">{pErr?.message||sErr?.message||lErr?.message}</div>;
+  return <StockWorkspace kind={module as 'adjustments'|'returns'} org={org} products={products||[]} sales={sales||[]} lines={lines||[]}/>;
+ }
  if(['team','roles'].includes(module)){
   const [{data:members,error:memberError},{data:roles,error:roleError},{data:assignments,error:assignmentError}]=await Promise.all([
     db.from('organization_members').select('user_id,role').eq('organization_id',org),
