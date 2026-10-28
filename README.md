@@ -36,4 +36,40 @@ A Next.js + Supabase multi-tenant SaaS starter for inventory management. **Phase
 ## Phase 2 backlog
 Products/variants/categories, warehouses and stock movement ledger, suppliers, purchase orders, receiving and adjustments. Later: POS, receipts, payments, returns and analytics.
 
-# stockflow-nextjs
+## No-login demo (new)
+
+Start with `npm install && npm run dev`, then open **http://localhost:3000/demo**.
+This route does not require Supabase credentials or registration. You can try products,
+suppliers and warehouse CRUD, a simulated POS checkout, sales, analytics, CSV exports,
+settings and activity history. Demo data persists **only in the current browser's localStorage**.
+It is **not secure**, does not sync across users/devices, and is not suitable for real business data.
+The authenticated Supabase-backed Phase 1 foundation remains available at `/login` and `/dashboard`.
+
+**Not implemented yet:** production multi-tenant inventory/stock ledger, real POS payment processing,
+refunds, supplier portal, full RBAC management, real-time sync, comprehensive reports and production audit trails.
+These require additional migrations, server-side business logic and tests.
+
+## Operational MVP upgrade (migration 0002)
+Run `supabase/migrations/0002_operations.sql` **after** migration 0001. This adds live Supabase-backed product CRUD (archive instead of destructive delete), supplier CRUD, basic POS checkout with stock validation and atomic inventory deduction, sales history, basic analytics, and activity logs. These routes are available under `/dashboard/products`, `/dashboard/suppliers`, `/dashboard/pos`, `/dashboard/sales`, `/dashboard/analytics`, and `/dashboard/audit`.
+
+**Scope limits:** This is an operational MVP, **not a finished enterprise POS**. Card payments are marked as externally collected and no gateway is connected. Taxes, refunds, purchase orders, full warehouse management, supplier portal, invitations, advanced RBAC, MFA enrollment, stock counting, subscriptions, advanced reporting, and receipts/printing are not yet implemented. Do not process production financial transactions until testing and security review. Default company selection is the first membership for module routes; multi-company module routing still needs a persistent organization context.
+
+## Extended MVP (migration 0003)
+
+Apply `supabase/migrations/0003_extended.sql` **after** 0001 and 0002. This adds warehouses, customers, categories, purchase orders, purchase receiving, warehouse stock schema, stock transfer schema, sales return schema, team role updates, and company settings RPCs.
+
+Pages: `/dashboard/warehouses`, `/dashboard/customers`, `/dashboard/categories`, `/dashboard/purchases`, `/dashboard/team`, `/dashboard/roles`, `/dashboard/settings`.
+
+### Limitations (read before production use)
+
+This is an extended development MVP, **not a finished production POS/ERP**. Warehouse stock allocation and transfers, returns, invoicing/receipt printing, multi-line purchase order UI, supplier self-service, user invitation acceptance, billing/subscriptions, MFA enrollment, per-branch POS registers, configurable taxes, accounting integration, and automated end-to-end tests are not implemented. POS records externally collected payments; it does not charge cards. The `products.stock` value remains the aggregate source for POS; warehouse_stock is schema-only until warehouse allocation workflows are implemented. Supplier records are company-scoped, but suppliers do not yet have a separate access-controlled portal. Role changes only work for existing members. Never use live financial data before testing and hardening all workflows.
+
+### Setup
+
+1. Keep your own `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`.
+2. Run migrations in order (0001, 0002, 0003) in the Supabase SQL Editor. Do not rerun already applied migrations.
+3. `npm install`, `npm run typecheck`, `npm run build`, `npm run dev`.
+4. Configure Supabase Auth site URL and allowed redirect URLs for localhost and your deployment.
+5. Test with at least two organizations and two users to validate tenant isolation before any public launch.
+
+**Verification:** Dependency installation could not finish in the artifact environment, so TypeScript/build/runtime and database migration execution have not been verified. Resolve any local errors before deploying.
