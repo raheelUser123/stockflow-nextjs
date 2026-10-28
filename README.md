@@ -128,3 +128,7 @@ Run `supabase/migrations/0009_supplier_portal.sql` in Supabase SQL Editor **once
 
 Apply `supabase/migrations/0010_supplier_fulfillment.sql` **once**, after 0009.
 Suppliers linked to purchase orders can acknowledge an open order and subsequently mark it dispatched, optionally entering a tracking reference. All writes go through a tenant-scoped, authenticated RPC and generate audit records. This does **not** receive goods, change purchase order status, or increase stock. A company operator must still complete goods receipt. Do not rerun older migrations. Back up production data and test in staging first.
+
+## Migration 0012 — Supplier invoice review
+
+After 0011, apply `supabase/migrations/0012_invoice_review.sql` once. Owners, admins and managers can open **Invoice Reviews** in the dashboard, see invoices submitted for their company, open a short-lived signed file link, and approve/reject each pending invoice with an optional note. Decisions are recorded in audit logs and cannot be changed through this workflow. Review **does not** pay the supplier or receive stock. The review page uses the first eligible company by default; supply `?organization=<organization_uuid>` for a specific membership. Back up and test on staging before production rollout.

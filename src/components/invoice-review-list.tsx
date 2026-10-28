@@ -1,0 +1,11 @@
+'use client';
+import {useState,useTransition} from 'react';
+import {reviewInvoice} from '@/app/invoice-review-actions';
+type Invoice={id:string;invoice_number:string;file_name:string;file_url:string|null;created_at:string;review_status:string;review_note:string;supplier_name:string;order_reference:string};
+export function InvoiceReviewList({org,invoices}:{org:string;invoices:Invoice[]}){
+ const [pending,start]=useTransition();const [message,setMessage]=useState('');const [notes,setNotes]=useState<Record<string,string>>({});
+ function submit(id:string,status:'approved'|'rejected'){
+  setMessage('');start(async()=>{const result=await reviewInvoice(org,id,status,notes[id]||'');setMessage(result.error||'Review saved successfully');});
+ }
+ return <div className="space-y-4"><div className="panel overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{['Supplier / Order','Invoice','Submitted','Status','Review'].map(x=><th key={x} className="p-4">{x}</th>)}</tr></thead><tbody>{invoices.map(i=><tr className="border-t align-top" key={i.id}><td className="p-4"><b>{i.supplier_name}</b><p className="text-slate-500">{i.order_reference}</p></td><td className="p-4"><p>{i.invoice_number}</p>{i.file_url?<a className="text-indigo-600 underline" href={i.file_url} target="_blank" rel="noopener noreferrer">View {i.file_name}</a>:<span className="text-slate-500">File unavailable</span>}</td><td className="p-4">{new Date(i.created_at).toLocaleDateString()}</td><td className="p-4 capitalize"><b>{i.review_status}</b>{i.review_note&&<p className="text-slate-500 mt-1">{i.review_note}</p>}</td><td className="p-4 min-w-64">{i.review_status==='pending'?<div className="space-y-2"><input aria-label="Review note" className="input" placeholder="Review note (optional)" maxLength={1000} value={notes[i.id]||''} onChange={e=>setNotes(n=>({...n,[i.id]:e.target.value}))}/><div className="flex gap-2"><button className="btn" disabled={pending} onClick={()=>submit(i.id,'approved')}>Approve</button><button className="btn" disabled={pending} onClick={()=>submit(i.id,'rejected')}>Reject</button></div></div>:<span className="text-slate-500">Reviewed</span>}</td></tr>)}</tbody></table>{!invoices.length&&<p className="p-6 text-slate-500">No supplier invoices submitted yet.</p>}</div>{message&&<p role="status" className="text-sm">{message}</p>}</div>;
+}

@@ -1,10 +1,11 @@
+import {requireMfa} from '@/lib/auth/require-mfa';
 import Link from 'next/link';
 import SupplierFulfillmentForm from '@/components/supplier-fulfillment-form';
 import SupplierInvoiceUpload from '@/components/supplier-invoice-upload';
 import {redirect} from 'next/navigation';
-import {createClient} from '@/lib/supabase/server';
+
 export default async function SupplierPortal({searchParams}:{searchParams:Promise<{organization?:string}>}){
- const db=await createClient();const {data:{user}}=await db.auth.getUser();if(!user)redirect('/login');
+ const {supabase:db,user}=await requireMfa();
  const {data:members}=await db.from('organization_members').select('organization_id,role,organizations(name)').eq('user_id',user.id).eq('role','supplier');
  if(!members?.length)return <main className="max-w-3xl mx-auto p-8"><h1 className="text-3xl font-bold">Supplier portal</h1><p className="mt-4">Your account does not have a supplier membership. Ask the company administrator to invite you as a supplier and link your account.</p><Link href="/dashboard" className="text-indigo-600">Back to dashboard</Link></main>;
  const {organization}=await searchParams;const selected=members.find(m=>m.organization_id===organization)||members[0];
