@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.*
+
+# Next.js and build output
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment secrets (keep the example)
+.env
+.env.*
+!.env.example
+
+# Logs and local tooling
+*.log
+.vercel/
+.supabase/
+supabase/.temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Private keys
+*.pem
+*.key

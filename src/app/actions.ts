@@ -1,0 +1,4 @@
+"use server";
+import { revalidatePath } from 'next/cache';import { redirect } from 'next/navigation';import { createClient } from '@/lib/supabase/server';
+export async function createOrganization(_previous:{error?:string},form:FormData){const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)redirect('/login');const name=String(form.get('name')||'').trim(),slug=String(form.get('slug')||'').trim().toLowerCase();if(name.length<2||! /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))return {error:'Enter a valid company name and slug.'};const {data,error}=await supabase.rpc('create_organization',{p_name:name,p_slug:slug});if(error)return {error:error.message};revalidatePath('/dashboard');redirect('/dashboard?organization='+data)}
+export async function signOut(){const supabase=await createClient();await supabase.auth.signOut();redirect('/login')}
