@@ -84,3 +84,9 @@ After 0001, 0002, and 0003, run `supabase/migrations/0004_team_roles.sql` once. 
 - All mutation functions check authenticated owner/admin role and write audit entries.
 
 **Important**: custom permission definitions are stored and `has_org_permission` is available for future RPCs. Existing operational RPCs still authorize via built-in roles; custom permissions do not automatically override them. This is not full custom RBAC enforcement. Supplier self-service, MFA enrollment, invite emails, subscription billing, refunds, warehouse transfers and full accounting remain unimplemented. Do not use for production until reviewed and tested.
+
+## Migration 0005 — Product images
+
+Run `supabase/migrations/0005_product_images.sql` **once**, after 0001–0004. It creates a private Supabase Storage bucket (`product-images`), adds `products.image_path`, and protects image uploads/deletes with organization role checks. Products page now supports image upload (JPG/PNG/WebP, max 5MB); POS and product table show signed images. No service-role key is needed in the browser.
+
+The upload and product save are separate requests. If save fails, the UI attempts to remove the uploaded image; orphaned images from interrupted requests may require a periodic cleanup job. The current image is replaced when editing with a new upload; old files are not automatically garbage-collected. This is a development release, not a fully audited production deployment.
