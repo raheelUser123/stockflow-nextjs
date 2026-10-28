@@ -98,3 +98,28 @@ Run `supabase/migrations/0006_returns_adjustments.sql` after migrations 0001–0
 ### Current limitations / production blockers
 
 This repository is an evolving MVP, **not a finished enterprise SaaS**. There is no real subscription billing, supplier self-service portal, transactional email invitations, end-to-end custom-permission enforcement across legacy RPCs, full warehouse stock accounting, integrated card gateway, cash reconciliation, or verified production build. Product photos require migration 0005 and Supabase Storage. Before live business use, run `npm install`, `npm run typecheck`, `npm run build`, and tenant-isolation/stock-concurrency tests against a staging Supabase project. Apply migrations to a backed-up database; test with a fresh company and a second account. Never place Supabase service-role credentials in `NEXT_PUBLIC_*` environment variables.
+
+## 0008 reporting / receipt upgrade
+- `/dashboard/sales` now links each receipt to `/dashboard/sales/[id]`.
+- Receipt detail includes server-side tenant membership checks, line items, and browser print / Save PDF.
+- `/dashboard/analytics` includes an interactive daily revenue chart with 7/14/30 day filters.
+- This release requires **no new SQL migration**. It uses the existing `sales`, `sale_items`, `products`, `organizations` tables.
+- Printing uses the browser print dialog, not a server-generated PDF or thermal-printer driver.
+- No card gateway, supplier portal, subscription billing, or full integration tests are included in this increment.
+
+## Upgrade 0008 — secure team invitations
+
+Run `supabase/migrations/0008_invitations.sql` **once** in Supabase SQL Editor after 0007. In Team, generate an invitation link and share it securely with the specified email address. The recipient registers/verifies their email (if needed), signs in, opens the link and accepts. Invitations expire after 7 days, are single-use and are matched to the authenticated verified email. Email delivery is **not** integrated; links are shared manually. Do not paste invitation links into public channels.
+
+This release does not implement supplier self-service, SaaS billing or end-to-end custom permission enforcement. Test migrations on staging before deploying to production.
+
+## Migration 0009 — Supplier Portal
+
+Run `supabase/migrations/0009_supplier_portal.sql` in Supabase SQL Editor **once** after migration 0008. This adds supplier-account links, a supplier-scoped read-only purchase-order portal, audit-logged linking/unlinking, and tightens broad read policies so supplier-only accounts cannot read general company records.
+
+1. In **Team**, invite the supplier's email with role **Supplier**. Share the invitation link securely; email delivery is not automated.
+2. Create the matching supplier record under **Suppliers** (if not already present).
+3. Visit **Supplier Access** and link the supplier-role member to the supplier record.
+4. Supplier signs in and visits `/supplier`. They can see their own purchase-order summaries.
+
+**Scope:** This upgrade provides read-only supplier order summaries and administrator-managed supplier links. Delivery confirmations, supplier invoice uploads, automated email delivery, full custom-role enforcement, subscription billing, and production integration tests are **not** included. Do not treat it as a final enterprise release. Back up the production database and test on staging before applying the migration.

@@ -1,0 +1,9 @@
+'use client';
+import {useState,useTransition} from 'react';
+import {createInvitation} from '@/app/extended-actions';
+export function InvitationManager({org}:{org:string}){
+ const [email,setEmail]=useState('');const [role,setRole]=useState('viewer');const [link,setLink]=useState('');const [error,setError]=useState('');const [busy,start]=useTransition();
+ return <section className="panel p-6 space-y-4"><h2 className="text-lg font-bold">Invite a team member</h2><p className="text-sm text-slate-500">Generate a secure, single-use invitation link valid for 7 days. Send the link to the invited email yourself. The user can register before accepting.</p>
+ <form onSubmit={e=>{e.preventDefault();setError('');setLink('');start(async()=>{const result=await createInvitation(org,email,role);if(result.error)setError(result.error);else if(typeof result.data==='string')setLink(`${window.location.origin}/invite?token=${encodeURIComponent(result.data)}`);});}} className="flex flex-col md:flex-row gap-3"><input className="input flex-1" type="email" required placeholder="team@example.com" value={email} onChange={e=>setEmail(e.target.value)}/><select className="input" value={role} onChange={e=>setRole(e.target.value)}>{['admin','manager','cashier','supplier','viewer'].map(r=><option key={r} value={r}>{r}</option>)}</select><button className="btn" disabled={busy}>{busy?'Generating…':'Create invitation'}</button></form>
+ {error&&<p role="alert" className="text-red-600 text-sm">{error}</p>}{link&&<div className="rounded-xl bg-indigo-50 p-4 space-y-2"><p className="text-sm font-medium">Invitation link (shown once)</p><input className="input w-full" readOnly value={link} aria-label="Invitation link"/><button className="btn" type="button" onClick={()=>navigator.clipboard.writeText(link)}>Copy link</button><p className="text-xs text-slate-600">Only the intended verified email can accept this invitation.</p></div>}</section>;
+}

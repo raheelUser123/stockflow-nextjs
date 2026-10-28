@@ -10,3 +10,5 @@ export async function saveSettings(org:string,theme:string,timezone:string){retu
 export async function addRegisteredMember(org:string,email:string,role:string){return rpc('add_registered_member',{p_org:org,p_email:email,p_role:role});}
 export async function manageCustomRole(org:string,action:string,id:string|null,name:string,permissions:string[]){return rpc('manage_custom_role',{p_org:org,p_action:action,p_id:id,p_name:name,p_permissions:permissions});}
 export async function assignCustomRole(org:string,user:string,role:string|null){return rpc('assign_custom_role',{p_org:org,p_user:user,p_role_id:role});}
+export async function createInvitation(org:string,email:string,role:string){return rpc('create_team_invitation',{p_org:org,p_email:email,p_role:role});}
+export async function acceptInvitation(token:string){return rpc('accept_team_invitation',{p_token:token});}
