@@ -2,6 +2,7 @@ import {requireMfa} from '@/lib/auth/require-mfa';
 import Link from 'next/link';
 import SupplierFulfillmentForm from '@/components/supplier-fulfillment-form';
 import SupplierInvoiceUpload from '@/components/supplier-invoice-upload';
+import {redirect} from 'next/navigation';
 
 export default async function SupplierPortal({searchParams}:{searchParams:Promise<{organization?:string}>}){
  const {supabase:db,user}=await requireMfa();
