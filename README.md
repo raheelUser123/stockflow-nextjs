@@ -123,3 +123,8 @@ Run `supabase/migrations/0009_supplier_portal.sql` in Supabase SQL Editor **once
 4. Supplier signs in and visits `/supplier`. They can see their own purchase-order summaries.
 
 **Scope:** This upgrade provides read-only supplier order summaries and administrator-managed supplier links. Delivery confirmations, supplier invoice uploads, automated email delivery, full custom-role enforcement, subscription billing, and production integration tests are **not** included. Do not treat it as a final enterprise release. Back up the production database and test on staging before applying the migration.
+
+## Migration 0010 — Supplier fulfillment
+
+Apply `supabase/migrations/0010_supplier_fulfillment.sql` **once**, after 0009.
+Suppliers linked to purchase orders can acknowledge an open order and subsequently mark it dispatched, optionally entering a tracking reference. All writes go through a tenant-scoped, authenticated RPC and generate audit records. This does **not** receive goods, change purchase order status, or increase stock. A company operator must still complete goods receipt. Do not rerun older migrations. Back up production data and test in staging first.
