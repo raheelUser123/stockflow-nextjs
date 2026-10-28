@@ -11,3 +11,9 @@ export async function completeSale(org:string,items:{product_id:string;quantity:
  const {data,error}=await db.rpc('checkout',{p_org:org,p_items:items,p_payment:payment});
  if(error)return {error:error.message};revalidatePath('/dashboard');revalidatePath('/dashboard/products');revalidatePath('/dashboard/sales');return {success:true,id:data};
 }
+
+export async function completeWarehouseSale(org:string,warehouse:string,items:{product_id:string;quantity:number}[],payment:string){
+ const db=await createClient();const {data:{user}}=await db.auth.getUser();if(!user)return {error:'Please sign in'};
+ const {data,error}=await db.rpc('checkout_from_warehouse',{p_org:org,p_warehouse:warehouse,p_items:items,p_payment:payment});
+ if(error)return {error:error.message};revalidatePath('/dashboard');revalidatePath('/dashboard/products');revalidatePath('/dashboard/sales');revalidatePath('/dashboard/pos');return {success:true,id:data};
+}
