@@ -1,7 +1,7 @@
 'use server';
 import {createClient} from '@/lib/supabase/server';
 import {revalidatePath} from 'next/cache';
-async function rpc(name:string,args:Record<string,unknown>){const db=await createClient();const {data:{user}}=await db.auth.getUser();if(!user)return {error:'Sign in required'};const {data,error}=await db.rpc(name,args);if(!error)revalidatePath('/dashboard',{type:'layout'});return error?{error:error.message}:{success:true,data};}
+async function rpc(name:string,args:Record<string,unknown>){const db=await createClient();const {data:{user}}=await db.auth.getUser();if(!user)return {error:'Sign in required'};const {data,error}=await db.rpc(name,args);if(!error)revalidatePath('/dashboard','layout');return error?{error:error.message}:{success:true,data};}
 export async function extendedRecord(org:string,kind:string,action:string,id:string|null,payload:Record<string,string>){return rpc('manage_extended',{p_org:org,p_kind:kind,p_action:action,p_id:id,p_payload:payload});}
 export async function createPurchase(org:string,supplier:string,reference:string,items:{product_id:string;quantity:number;unit_cost:number}[]){return rpc('create_purchase',{p_org:org,p_supplier:supplier,p_reference:reference,p_items:items});}
 export async function receivePurchase(org:string,order:string){return rpc('receive_purchase',{p_org:org,p_order:order});}

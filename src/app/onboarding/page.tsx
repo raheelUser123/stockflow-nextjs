@@ -1,3 +1,3 @@
 import {requireMfa} from '@/lib/auth/require-mfa';
-import {redirect} from 'next/navigation';import {OnboardingForm} from '@/components/onboarding-form';
-export default async function Page(){const {user}=await requireMfa();return <main className="min-h-screen grid place-items-center p-5"><section className="panel w-full max-w-lg p-9"><div className="text-indigo-600 font-bold mb-3">STOCKFLOW PRO</div><h1 className="text-3xl font-bold mb-2">Create your workspace</h1><p className="text-slate-500 mb-8">Set up your first company to access the dashboard.</p><OnboardingForm/></section></main>}
+import {OnboardingForm} from '@/components/onboarding-form';
+export default async function Page(){await requireMfa();return <main className="min-h-screen grid place-items-center p-5"><section className="panel w-full max-w-lg p-9"><div className="text-indigo-600 font-bold mb-3">STOCKFLOW PRO</div><h1 className="text-3xl font-bold mb-2">Create your workspace</h1><p className="text-slate-500 mb-8">Set up your first company to access the dashboard.</p><OnboardingForm/></section></main>}
