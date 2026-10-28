@@ -73,3 +73,14 @@ This is an extended development MVP, **not a finished production POS/ERP**. Ware
 5. Test with at least two organizations and two users to validate tenant isolation before any public launch.
 
 **Verification:** Dependency installation could not finish in the artifact environment, so TypeScript/build/runtime and database migration execution have not been verified. Resolve any local errors before deploying.
+
+## Team and custom role extension (migration 0004)
+
+After 0001, 0002, and 0003, run `supabase/migrations/0004_team_roles.sql` once. Open `/dashboard/team` or `/dashboard/roles`.
+
+- Add a **previously registered, email-confirmed** user to the current company by email, using a built-in role. This does **not** send email invitations or create auth accounts.
+- Create, edit, delete custom permission sets; assign or remove a custom role from a company member.
+- Change built-in roles and remove members, with protected owner membership.
+- All mutation functions check authenticated owner/admin role and write audit entries.
+
+**Important**: custom permission definitions are stored and `has_org_permission` is available for future RPCs. Existing operational RPCs still authorize via built-in roles; custom permissions do not automatically override them. This is not full custom RBAC enforcement. Supplier self-service, MFA enrollment, invite emails, subscription billing, refunds, warehouse transfers and full accounting remain unimplemented. Do not use for production until reviewed and tested.

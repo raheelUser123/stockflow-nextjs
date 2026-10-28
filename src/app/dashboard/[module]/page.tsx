@@ -1,9 +1,19 @@
 import {notFound,redirect} from 'next/navigation';import {createClient} from '@/lib/supabase/server';import {OperationsWorkspace} from '@/components/operations-workspace';
 import {ExtendedWorkspace} from '@/components/extended-workspace';
+import {TeamRolesWorkspace} from '@/components/team-roles-workspace';
 const names:Record<string,string>={customers:'Customers',categories:'Categories',purchases:'Purchase Orders',products:'Products',warehouses:'Warehouses',suppliers:'Suppliers',pos:'Point of Sale',sales:'Sales',analytics:'Analytics',team:'Team Management',roles:'Roles & Permissions',audit:'Activity Logs',settings:'Settings'};
 export default async function Page({params,searchParams}:{params:Promise<{module:string}>,searchParams:Promise<{organization?:string}>}){
  const {module}=await params;if(!names[module])notFound();const db=await createClient();const {data:{user}}=await db.auth.getUser();if(!user)redirect('/login');const {data:members}=await db.from('organization_members').select('organization_id,role').eq('user_id',user.id);if(!members?.length)redirect('/onboarding');const query=await searchParams;const org=members.find(m=>m.organization_id===query.organization)?.organization_id||members[0].organization_id;
- if(['warehouses','customers','categories','purchases','team','roles','settings'].includes(module)){
+ if(['team','roles'].includes(module)){
+  const [{data:members,error:memberError},{data:roles,error:roleError},{data:assignments,error:assignmentError}]=await Promise.all([
+    db.from('organization_members').select('user_id,role').eq('organization_id',org),
+    db.from('custom_roles').select('id,name,permissions').eq('organization_id',org),
+    db.from('member_custom_roles').select('user_id,custom_role_id').eq('organization_id',org)
+  ]);
+  if(memberError||roleError||assignmentError)return <div className="panel p-8">Run migration 0004_team_roles.sql first: {memberError?.message||roleError?.message||assignmentError?.message}</div>;
+  return <TeamRolesWorkspace org={org} members={members||[]} roles={roles||[]} assignments={assignments||[]} />;
+ }
+ if(['warehouses','customers','categories','purchases','settings'].includes(module)){
   const table=module==='purchases'?'purchase_orders':module==='team'||module==='roles'?'organization_members':module==='settings'?'organization_settings':module;
   const [{data:rows,error}, {data:products},{data:suppliers},{data:members},{data:settings}]=await Promise.all([
    db.from(table).select('*').eq('organization_id',org).limit(200),

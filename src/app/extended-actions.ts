@@ -7,3 +7,6 @@ export async function createPurchase(org:string,supplier:string,reference:string
 export async function receivePurchase(org:string,order:string){return rpc('receive_purchase',{p_org:org,p_order:order});}
 export async function changeTeam(org:string,user:string,role:string,action:string){return rpc('manage_team',{p_org:org,p_user:user,p_role:role,p_action:action});}
 export async function saveSettings(org:string,theme:string,timezone:string){return rpc('update_company_settings',{p_org:org,p_theme:theme,p_timezone:timezone});}
+export async function addRegisteredMember(org:string,email:string,role:string){return rpc('add_registered_member',{p_org:org,p_email:email,p_role:role});}
+export async function manageCustomRole(org:string,action:string,id:string|null,name:string,permissions:string[]){return rpc('manage_custom_role',{p_org:org,p_action:action,p_id:id,p_name:name,p_permissions:permissions});}
+export async function assignCustomRole(org:string,user:string,role:string|null){return rpc('assign_custom_role',{p_org:org,p_user:user,p_role_id:role});}
